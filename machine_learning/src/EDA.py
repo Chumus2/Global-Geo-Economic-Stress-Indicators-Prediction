@@ -12,17 +12,17 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def eda():
+def eda(metadata_path: str, year_path: str, stress_path: str, output_path: str):
     # ==================
     # DATA PREPARATION
     # ==================
-    metadata = load_data("../data/raw_data/raw_country_metadata.csv")
-    year_indicators = load_data("../data/raw_data/raw_country_year_indicators.csv")
-    stress_score = load_data("../data/raw_data/raw_economic_stress_score.csv")
+    metadata = load_data(metadata_path)
+    year_indicators = load_data(year_path)
+    stress_score = load_data(stress_path)
 
 
     # ==================
-    # NULLS & DUPLICATES METADATA
+    # NULLS METADATA
     # ==================
     # lat/long don't vary by year, so a simple global median fill is fine here
     metadata["latitude"] = metadata["latitude"].fillna(metadata["latitude"].median())
@@ -30,14 +30,13 @@ def eda():
 
 
     # ==================
-    # NULLS & DUPLICATES YEAR INDICATORS
+    # NULLS YEAR INDICATORS
     # ==================
     # Target column - rows without it are useless for modeling, drop upfront
     year_indicators = year_indicators[year_indicators["economic_stress_score"].notna()]
 
     year_indicators = clip_outliers(year_indicators, target="inflation")
 
-    # GOTCHA: .drop() takes a list, not multiple positional args
     numeric_year_cols = year_indicators.select_dtypes(include="number").columns.drop(["year", "economic_stress_score"])
 
     # Fill what we can per-year, drop what's still NaN after that
@@ -58,17 +57,18 @@ def eda():
     ]
 
     for col in cols_to_clip:
-        # NOTE: this branch never triggers - gdp_per_capita/population/cereal_production_tonnes
-        # aren't in cols_to_clip, so log1p is
-        # never actually applied here. Likely leftover/dead logic.
-        if col in ["gdp_per_capita", "population", "cereal_production_tonnes"]:
-            year_indicators[col] = np.log1p(year_indicators[col])
-        else:
-            year_indicators = clip_outliers(year_indicators, target=col, lower_quantile=0.05, upper_quantile=0.95)
+        # NOTE: Outlier clipping applied only to selected variables;
+        # additional variables (e.g. gdp_per_capita, population, cereal_production_tonnes)
+        # are handled separately via log transformation. Ensure consistency if feature set changes.
+        year_indicators = clip_outliers(year_indicators, target=col, lower_quantile=0.05, upper_quantile=0.95)
+
+    log_cols = ["gdp_per_capita", "population", "cereal_production_tonnes"]
+    for col in log_cols:
+        year_indicators[col] = np.log1p(year_indicators[col])
 
 
     # ==================
-    # NULLS & DUPLICATES STRESS SCORE
+    # NULLS STRESS SCORE
     # ==================
     numeric_stress_cols = stress_score.select_dtypes(include="number").columns.drop("year")
 
@@ -114,8 +114,10 @@ def eda():
     # ==================
     # SAVING DATAFRAME
     # ==================
-    Path("../data/cleaned_data").mkdir(parents=True, exist_ok=True)
-    merged.to_csv("../data/cleaned_data/cleaned_merged_data.csv", index=False)
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    merged.to_csv(output_path, index=False)
+
+    return merged
 
 
 # ==================
@@ -123,7 +125,12 @@ def eda():
 # ==================
 if __name__ == "__main__":
     try:
-        eda()
+        df = eda(
+            metadata_path="../data/raw_data/raw_country_metadata.csv",
+            year_path="../data/raw_data/raw_country_year_indicators.csv",
+            stress_path="../data/raw_data/raw_economic_stress_score.csv",
+            output_path="../data/cleaned_data/cleaned_merged_data.csv"
+        )
     except Exception as e:
         print(f"Pipeline failed: {e}")
         raise
