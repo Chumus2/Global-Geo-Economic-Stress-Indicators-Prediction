@@ -4,6 +4,8 @@
 import pandas as pd
 from pathlib import Path
 
+from sklearn.model_selection import cross_val_score
+
 
 def load_data(path: str) -> pd.DataFrame:
     """
@@ -58,3 +60,32 @@ def clip_outliers(data: pd.DataFrame, target: str, upper_quantile: float=0.99, l
     lower = data[target].quantile(lower_quantile)
     data[target] = data[target].clip(lower=lower, upper=upper)
     return data
+
+
+def evaluate(model, kf, x, y):
+    """
+    This function evaluates a model using K-Fold Cross Validation.
+
+    It avoids dependency on a single train/test split
+    gives more reliable estimate of model performance
+    reduces variance in evaluation results
+
+    RMSE: prediction error magnitude (lower = better)
+    R2: explained variance (higher = better)
+    std: stability across folds (lower = more stable model)
+    """
+    rmse = -cross_val_score(
+        model,
+        x, y,
+        cv=kf,
+        scoring="neg_root_mean_squared_error"
+    )
+
+    r2 = cross_val_score(
+        model,
+        x, y,
+        cv=kf,
+        scoring="r2"
+    )
+
+    return rmse.mean(), rmse.std(), r2.mean(), r2.std()
