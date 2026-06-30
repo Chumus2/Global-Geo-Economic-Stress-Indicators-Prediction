@@ -107,11 +107,27 @@
         </form>
 
         {% if prediction %}
-            <h3>Predicted Economic Stress Score: {{ prediction }}%</h3>
+            <h3 id="result" class="result">
+                Predicted Economic Stress Score: <b>{{ prediction }}%</b>
+                <span class="result-label">~ {{ prediction_label }} ~</span>
+            </h3>
         {% endif %}
 
     </main>
 
 </body>
+
+{% if prediction %}
+<script>
+    window.addEventListener("DOMContentLoaded", function () {
+        const result = document.getElementById("result");
+        if (!result) return;
+
+        result.scrollIntoView({ behavior: "auto", block: "center" });
+
+        result.classList.add("show");
+    });
+</script>
+{% endif %}
 
 </html>

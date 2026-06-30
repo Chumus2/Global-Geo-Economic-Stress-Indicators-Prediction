@@ -12,6 +12,7 @@ class MainPageView(View):
 
     def post(self, request):
         context = {}
+        context["form_data"] = request.POST.dict()
 
         try:
             payload = {
@@ -36,15 +37,21 @@ class MainPageView(View):
             context["error"] = "Please fill in all fields with valid numeric values."
             return render(request, "main/main.html", context)
 
-
         try:
             response = requests.post(API_URL, json=payload, timeout=10)
             response.raise_for_status()
             data = response.json()
-            context["prediction"] = data.get("predicted_economic_stress_score")
+            score = data.get("predicted_economic_stress_score")
+            context["prediction"] = score
+
+            if score < 33:
+                context["prediction_label"] = "Low economic stress"
+            elif score < 66:
+                context["prediction_label"] = "Moderate economic stress"
+            else:
+                context["prediction_label"] = "High economic stress"
+
         except requests.exceptions.RequestException as e:
             context["error"] = f"Could not reach the prediction service: {e}"
-
-        context["form_data"] = request.POST.dict()
 
         return render(request, "main/main.html", context)
