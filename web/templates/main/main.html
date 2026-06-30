@@ -5,14 +5,112 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Global Geo Economic Stress Indicators Prediction</title>
+    <title>Global Geo Economic Stress Indicators Predictor</title>
 
     <link rel="icon" href="{% static 'images/icon.png' %}">
+    <link rel="stylesheet" href="{% static 'stylesheets/main/main.css' %}">
 </head>
 
 <body>
 
+    <header>
+        <img src="{% static 'images/icon.png' %}" loading="lazy">
+        <h1>Global Geo Economic Stress Indicators Predictor</h1>
+    </header>
 
+    <main>
+
+        <h2>Economic Stress Prediction App</h2>
+
+        {% if error %}
+            <div class="error-message">
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'main' %}">
+            {% csrf_token %}
+
+            <h3>Year</h3>
+            <p>Reference year of the data</p>
+            <input type="number" name="year" placeholder="Example: 2020" autocomplete="off" value="{{ form_data.year|default:'' }}">
+
+            <h3>GDP Growth</h3>
+            <p>Annual GDP growth rate (%)</p>
+            <input type="number" step="any" name="gdp_growth" placeholder="Example: 3.5" autocomplete="off" value="{{ form_data.gdp_growth|default:'' }}">
+
+            <h3>Inflation</h3>
+            <p>Annual inflation rate (%)</p>
+            <input type="number" step="any" name="inflation" placeholder="Example: 4.2" autocomplete="off" value="{{ form_data.inflation|default:'' }}">
+
+            <h3>Unemployment</h3>
+            <p>Unemployment rate (%)</p>
+            <input type="number" step="any" name="unemployment" placeholder="Example: 6.1" autocomplete="off" value="{{ form_data.unemployment|default:'' }}">
+
+            <h3>GDP per Capita</h3>
+            <p>Gross domestic product per capita (USD)</p>
+            <input type="number" step="any" name="gdp_per_capita" placeholder="Example: 12000.0" autocomplete="off" value="{{ form_data.gdp_per_capita|default:'' }}">
+
+            <h3>Population</h3>
+            <p>Total population</p>
+            <input type="number" step="any" name="population" placeholder="Example: 5000000" autocomplete="off" value="{{ form_data.population|default:'' }}">
+
+            <h3>Food Production Index</h3>
+            <p>Index value representing food production levels</p>
+            <input type="number" step="any" name="food_production_index" placeholder="Example: 98.0" autocomplete="off" value="{{ form_data.food_production_index|default:'' }}">
+
+            <h3>Cereal Yield</h3>
+            <p>Cereal yield (kg per hectare)</p>
+            <input type="number" step="any" name="cereal_yield" placeholder="Example: 3200.0" autocomplete="off" value="{{ form_data.cereal_yield|default:'' }}">
+
+            <h3>Cereal Production</h3>
+            <p>Total cereal production (tonnes)</p>
+            <input type="number" step="any" name="cereal_production_tonnes" placeholder="Example: 1500000" autocomplete="off" value="{{ form_data.cereal_production_tonnes|default:'' }}">
+
+            <h3>Agricultural Land</h3>
+            <p>Percentage of land area used for agriculture (%)</p>
+            <input type="number" step="any" name="agricultural_land_pct" placeholder="Example: 35.0" autocomplete="off" value="{{ form_data.agricultural_land_pct|default:'' }}">
+
+            <h3>Dietary Energy Supply Adequacy</h3>
+            <p>Average dietary energy supply adequacy (%)</p>
+            <input type="number" step="any" name="dietary_energy_supply_adequacy" placeholder="Example: 120.0" autocomplete="off" value="{{ form_data.dietary_energy_supply_adequacy|default:'' }}">
+
+            <h3>Data Completeness Score</h3>
+            <p>Quality/completeness score of the underlying data (0-100)</p>
+            <input type="number" step="any" name="data_completeness_score" placeholder="Example: 95.0" autocomplete="off" value="{{ form_data.data_completeness_score|default:'' }}">
+
+            <h3>Latitude</h3>
+            <p>Geographic latitude of the country/region</p>
+            <input type="number" step="any" name="latitude" placeholder="Example: 40.0" autocomplete="off" value="{{ form_data.latitude|default:'' }}">
+
+            <h3>Longitude</h3>
+            <p>Geographic longitude of the country/region</p>
+            <input type="number" step="any" name="longitude" placeholder="Example: 20.0" autocomplete="off" value="{{ form_data.longitude|default:'' }}">
+
+            <h3>Food Pressure Score</h3>
+            <p>Computed food pressure score</p>
+            <input type="number" step="any" name="food_pressure_score" placeholder="Example: 45.0" autocomplete="off" value="{{ form_data.food_pressure_score|default:'' }}">
+
+            <h3>Income Group</h3>
+            <p>World Bank income classification</p>
+            <select name="income_group">
+                <option value="" disabled {% if not form_data.income_group %}selected{% endif %}>Select an income group</option>
+                <option value="Low income" {% if form_data.income_group == "Low income" %}selected{% endif %}>Low income</option>
+                <option value="Lower middle income" {% if form_data.income_group == "Lower middle income" %}selected{% endif %}>Lower middle income</option>
+                <option value="Upper middle income" {% if form_data.income_group == "Upper middle income" %}selected{% endif %}>Upper middle income</option>
+                <option value="High income" {% if form_data.income_group == "High income" %}selected{% endif %}>High income</option>
+                <option value="Not classified" {% if form_data.income_group == "Not classified" %}selected{% endif %}>Not classified</option>
+            </select>
+
+            <button type="submit">Predict</button>
+
+        </form>
+
+        {% if prediction %}
+            <h3>Predicted Economic Stress Score: {{ prediction }}%</h3>
+        {% endif %}
+
+    </main>
 
 </body>
 

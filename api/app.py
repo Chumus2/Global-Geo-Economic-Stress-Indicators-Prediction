@@ -78,4 +78,5 @@ def predict(data: StressData):
     df = pd.DataFrame([row])[FEATURE_ORDER]
 
     prediction = model.predict(df)[0]
-    return PredictionResponse(predicted_economic_stress_score=float(prediction))
+    prediction = round(float(prediction), 2)
+    return PredictionResponse(predicted_economic_stress_score=prediction)
