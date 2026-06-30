@@ -5,4 +5,9 @@ from django.views import View
 class MainPageView(View):
 
     def get(self, request):
-        return render(request, 'main.html')
+        return render(request, "main/main.html")
+
+    def post(self, request):
+        
+
+        return render(request, "main/main.html")
