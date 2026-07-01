@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./Api
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./machine_learning/models:/machine_learning/models
+
+  web:
+    build: ./web
+    ports:
+      - "8000:8000"
+    depends_on:
+      - api
+    env_file:
+      - ./web/.env
