@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views import View
 
 
-API_URL = "http://127.0.0.1:8001/predict"
+API_URL = "http://api:8001/predict"
 
 class MainPageView(View):
 
